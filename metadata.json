@@ -1,0 +1,5 @@
+{
+  "name": "WealthWise",
+  "description": "A production-grade personal financial analysis platform powered by Gemini AI. It aggregates user financial data to provide real-time health scores, projected growth, and actionable wealth-building strategies.",
+  "requestFramePermissions": []
+}
