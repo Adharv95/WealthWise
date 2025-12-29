@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, 
   AreaChart, Area, XAxis, YAxis, CartesianGrid 
 } from 'recharts';
-import { TrendingUp, AlertTriangle, CheckCircle, Target, ArrowUpRight, DollarSign, Wallet } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Target, ArrowUpRight, DollarSign, Wallet, ShieldCheck, Info } from 'lucide-react';
 
 interface Props {
   result: AnalysisResult;
@@ -16,194 +16,157 @@ interface Props {
 const COLORS = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
 
 const Dashboard: React.FC<Props> = ({ result, profile, onReset, isDarkMode }) => {
-  
-  // Calculate total monthly expenses to derive absolute amounts for the pie chart
   const totalExpenses = profile.expenses.reduce((acc, curr) => acc + curr.amount, 0);
-
-  // Prepare data with calculated amounts
   const pieData = result.expenseBreakdown.map(item => ({
     ...item,
     amount: Math.round((item.percentage / 100) * totalExpenses)
   }));
   
-  // Custom Gauge for Health Score
   const ScoreGauge = ({ score }: { score: number }) => {
-    const circumference = 2 * Math.PI * 40;
+    const circumference = 2 * Math.PI * 45;
     const offset = circumference - (score / 100) * circumference;
     const trackColor = isDarkMode ? '#1e293b' : '#f1f5f9';
     
     return (
-      <div className="relative flex items-center justify-center w-32 h-32">
+      <div className="relative flex items-center justify-center w-40 h-40">
         <svg className="w-full h-full transform -rotate-90">
-          <circle cx="50%" cy="50%" r="40" stroke={trackColor} strokeWidth="8" fill="transparent" />
+          <circle cx="50%" cy="50%" r="45" stroke={trackColor} strokeWidth="10" fill="transparent" />
           <circle 
-            cx="50%" cy="50%" r="40" stroke="#0ea5e9" strokeWidth="8" fill="transparent" 
+            cx="50%" cy="50%" r="45" stroke="url(#scoreGradient)" strokeWidth="10" fill="transparent" 
             strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
             className="transition-all duration-1000 ease-out"
           />
+          <defs>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#0ea5e9" />
+            </linearGradient>
+          </defs>
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className="text-3xl font-bold text-slate-800 dark:text-white">{score}</span>
-          <span className="text-xs text-slate-400 font-medium">SCORE</span>
+          <span className="text-4xl font-extrabold text-slate-800 dark:text-white">{score}</span>
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Health Score</span>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8 pb-12 animate-in fade-in duration-700">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Financial Analysis</h1>
-          <p className="text-slate-500 dark:text-slate-400">Based on your provided data</p>
+    <div className="w-full max-w-7xl mx-auto space-y-8 pb-16 animate-in fade-in duration-1000">
+      {/* Dynamic Header */}
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-slate-200 dark:border-slate-800 pb-8">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-bold uppercase tracking-wider mb-2">
+            <ShieldCheck className="w-3 h-3" /> Audit Verified
+          </div>
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Financial Blueprint</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Strategic roadmap for your wealth generation.</p>
         </div>
         <button 
           onClick={onReset}
-          className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors"
+          className="group px-6 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold transition-all flex items-center gap-2 shadow-sm"
         >
-          Start New Analysis
+          Reset Profile
         </button>
       </div>
 
-      {/* Top Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Net Worth</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">${result.netWorth.toLocaleString()}</p>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Net Worth', value: `$${result.netWorth.toLocaleString()}`, icon: Wallet, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/10' },
+          { label: 'Monthly Flow', value: `${result.monthlyCashFlow >= 0 ? '+' : ''}$${result.monthlyCashFlow.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/10' },
+          { label: 'Savings Rate', value: `${result.savingsRate}%`, icon: Target, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-900/10' },
+          { label: 'DTI Ratio', value: `${result.debtToIncomeRatio}%`, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/10' },
+        ].map((kpi, i) => (
+          <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-transform hover:-translate-y-1">
+            <div className={`w-10 h-10 ${kpi.bg} ${kpi.color} rounded-xl flex items-center justify-center mb-4`}>
+              <kpi.icon className="w-5 h-5" />
             </div>
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full"><Wallet className="w-5 h-5"/></div>
-        </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Monthly Flow</p>
-              <p className={`text-2xl font-bold ${result.monthlyCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {result.monthlyCashFlow >= 0 ? '+' : ''}${result.monthlyCashFlow.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full"><DollarSign className="w-5 h-5"/></div>
-        </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Savings Rate</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{result.savingsRate}%</p>
-            </div>
-            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-full"><Target className="w-5 h-5"/></div>
-        </div>
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Debt/Income</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{result.debtToIncomeRatio}%</p>
-            </div>
-            <div className="p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-full"><AlertTriangle className="w-5 h-5"/></div>
-        </div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{kpi.label}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{kpi.value}</p>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Column: Insights & Charts */}
         <div className="lg:col-span-2 space-y-8">
-          
-          {/* Summary Card */}
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-100 dark:bg-primary-900/20 rounded-bl-full opacity-50 -mr-8 -mt-8"></div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 relative z-10">Executive Summary</h3>
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed relative z-10">{result.summary}</p>
-            <div className="mt-6 flex flex-wrap gap-2">
+          {/* Executive Insights */}
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-primary-500/10 transition-colors"></div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Executive Insights</h3>
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-6 font-medium italic border-l-4 border-primary-500 pl-4">
+              "{result.summary}"
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {result.keyInsights.map((insight, idx) => (
-                <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">
-                  {insight}
-                </span>
+                <div key={idx} className="flex gap-3 items-start p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <Info className="w-5 h-5 text-primary-500 shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{insight}</p>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Projection Chart */}
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary-600" /> Wealth Projection (10 Years)
-            </h3>
-            <div className="h-[300px] w-full">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-primary-500" /> Wealth Projection
+              </h3>
+              <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-violet-500"></div> Aggressive</div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-primary-500"></div> Conservative</div>
+              </div>
+            </div>
+            <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={result.wealthProjection}>
                   <defs>
-                    <linearGradient id="colorAggressive" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="areaAgg" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
                       <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                     </linearGradient>
-                    <linearGradient id="colorConservative" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="areaCons" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.1}/>
                       <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#f1f5f9'} />
-                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: isDarkMode ? '#94a3b8' : '#94a3b8', fontSize: 12}} />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: isDarkMode ? '#94a3b8' : '#94a3b8', fontSize: 12}} 
-                    tickFormatter={(value) => `$${value/1000}k`}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: '700'}} tickFormatter={(v) => `Yr ${v}`} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11, fontWeight: '700'}} tickFormatter={(v) => `$${v/1000}k`} />
                   <RechartsTooltip 
-                    contentStyle={{
-                      backgroundColor: isDarkMode ? '#1e293b' : '#fff', 
-                      borderRadius: '8px', 
-                      border: isDarkMode ? '1px solid #334155' : 'none', 
-                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                    }}
-                    itemStyle={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}
-                    labelStyle={{ color: isDarkMode ? '#94a3b8' : '#64748b' }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                    contentStyle={{ backgroundColor: isDarkMode ? '#0f172a' : '#fff', borderRadius: '16px', border: '1px solid #334155', padding: '12px' }}
+                    itemStyle={{ fontWeight: '700', fontSize: '12px' }}
+                    formatter={(val: number) => [`$${val.toLocaleString()}`, '']}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="aggressive" 
-                    stroke="#8b5cf6" 
-                    fillOpacity={1} 
-                    fill="url(#colorAggressive)" 
-                    name="Aggressive Strategy"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="conservative" 
-                    stroke="#0ea5e9" 
-                    fillOpacity={1} 
-                    fill="url(#colorConservative)" 
-                    name="Conservative Strategy"
-                  />
+                  <Area type="monotone" dataKey="aggressive" stroke="#8b5cf6" strokeWidth={3} fill="url(#areaAgg)" />
+                  <Area type="monotone" dataKey="conservative" stroke="#0ea5e9" strokeWidth={3} fill="url(#areaCons)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Action Plan */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
-             <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-               <h3 className="text-lg font-bold text-slate-800 dark:text-white">Action Plan</h3>
-               <p className="text-sm text-slate-500 dark:text-slate-400">Prioritized steps to improve your financial health</p>
+          {/* Action List */}
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+             <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+               <h3 className="text-xl font-bold text-slate-900 dark:text-white">Action Plan</h3>
+               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{result.actionPlan.length} Steps</span>
              </div>
              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                {result.actionPlan.map((action, idx) => (
-                 <div key={idx} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                   <div className="flex justify-between items-start mb-2">
-                     <div className="flex items-center gap-3">
-                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx === 0 ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}>
-                          {idx + 1}
-                        </span>
-                        <h4 className="font-semibold text-slate-800 dark:text-slate-200">{action.title}</h4>
-                     </div>
-                     <span className={`px-2 py-1 rounded text-xs font-medium ${
-                       action.priority === 'High' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 
-                       action.priority === 'Medium' ? 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400' : 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                     }`}>
-                       {action.priority} Priority
-                     </span>
+                 <div key={idx} className="p-8 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all">
+                   <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-bold text-lg text-slate-900 dark:text-white">{action.title}</h4>
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                        action.priority === 'High' ? 'bg-red-500 text-white' : 
+                        action.priority === 'Medium' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+                      }`}>
+                        {action.priority} Priority
+                      </span>
                    </div>
-                   <p className="text-slate-600 dark:text-slate-400 text-sm ml-11 mb-2">{action.description}</p>
-                   <div className="ml-11 flex items-center gap-2 text-xs text-primary-600 dark:text-primary-400 font-medium">
-                     <ArrowUpRight className="w-3 h-3" /> Impact: {action.impact}
+                   <p className="text-slate-500 dark:text-slate-400 mb-4">{action.description}</p>
+                   <div className="flex items-center gap-2 text-xs font-black text-primary-600 dark:text-primary-400">
+                     <ArrowUpRight className="w-4 h-4" /> IMPACT: {action.impact}
                    </div>
                  </div>
                ))}
@@ -211,65 +174,42 @@ const Dashboard: React.FC<Props> = ({ result, profile, onReset, isDarkMode }) =>
           </div>
         </div>
 
-        {/* Sidebar: Score & Breakdown */}
+        {/* Sidebar */}
         <div className="space-y-8">
-          
-          {/* Health Score Card */}
-          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Financial Health</h3>
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center">
             <ScoreGauge score={result.financialHealthScore} />
-            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-4">
-              Your score is calculated based on savings, debt, and asset allocation diversity.
+            <p className="text-center text-sm font-medium text-slate-500 dark:text-slate-400 mt-6 leading-relaxed">
+              Your score represents the structural integrity of your finances based on debt-to-income and liquid reserves.
             </p>
           </div>
 
-          {/* Expenses Chart */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Expense Breakdown</h3>
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Expense Allocation</h3>
             <div className="h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={pieData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="percentage"
-                    nameKey="category"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke={isDarkMode ? '#0f172a' : '#fff'} />
-                    ))}
+                  <Pie data={pieData} innerRadius={70} outerRadius={90} paddingAngle={8} dataKey="percentage" nameKey="category">
+                    {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="transparent" />)}
                   </Pie>
                   <RechartsTooltip 
-                    formatter={(value: number, name: string, entry: any) => [`${value}% ($${entry.payload.amount.toLocaleString()})`, name]}
-                    contentStyle={{
-                      backgroundColor: isDarkMode ? '#1e293b' : '#fff',
-                      borderColor: isDarkMode ? '#334155' : '#f1f5f9',
-                      color: isDarkMode ? '#f8fafc' : '#0f172a',
-                      borderRadius: '8px'
-                    }}
-                    itemStyle={{ color: isDarkMode ? '#f8fafc' : '#0f172a' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '10px' }}
+                    formatter={(v: number, n: string) => [`${v}%`, n]}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="space-y-2 mt-4">
-              {pieData.slice(0, 5).map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-                    <span className="text-slate-600 dark:text-slate-300">{item.category}</span>
+            <div className="space-y-3 mt-6">
+              {pieData.map((item, i) => (
+                <div key={i} className="flex justify-between items-center group cursor-default">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{item.category}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                     <span className="text-slate-400 text-xs">${item.amount.toLocaleString()}</span>
-                     <span className="font-medium text-slate-800 dark:text-white">{item.percentage}%</span>
-                  </div>
+                  <span className="text-sm font-black text-slate-900 dark:text-white">${item.amount.toLocaleString()}</span>
                 </div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </div>

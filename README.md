@@ -1,20 +1,48 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# 🏦 WealthWise - AI Financial Architect
 
-This contains everything you need to run your app locally.
+WealthWise is a high-performance, AI-driven financial audit platform. This repository contains the production-grade frontend and Gemini 3 Pro integration.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1O2fF71pOLWJha0l1LZ4rQookayjBVClY
+## 🚀 Quick Start (Local)
 
-## Run Locally
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-**Prerequisites:**  Node.js
+2. **Environment Setup**:
+   Create a `.env` file in the root directory:
+   ```env
+   API_KEY=your_gemini_api_key_here
+   ```
 
+3. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 🌐 Production Deployment
+
+### Option 1: Vercel (Recommended)
+1. Push your code to a GitHub repository.
+2. Import the project into Vercel.
+3. In the **Environment Variables** section, add:
+   - Key: `API_KEY`
+   - Value: `[Your Gemini API Key]`
+4. Click **Deploy**.
+
+### Option 2: Netlify
+1. Connect your repository to Netlify.
+2. Set the build command to `npm run build` and the publish directory to `dist`.
+3. Add the `API_KEY` under **Site Settings > Environment Variables**.
+4. Deploy the site.
+
+## 🛠 Tech Stack
+- **Engine**: Google Gemini 3 Pro (with Thinking Mode)
+- **Framework**: React 19 + TypeScript
+- **Styling**: Tailwind CSS (Fintech Design System)
+- **Visuals**: Recharts (Customized Tooltips)
+- **Icons**: Lucide React
+
+## 🔒 Security Note
+In a live production fintech environment, we recommend wrapping the `geminiService` calls in a backend proxy (Node.js/Python) to ensure the `API_KEY` is never exposed to the client-side bundle.
